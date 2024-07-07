@@ -94,7 +94,10 @@ class Decimal:
                 result_list.append("null")
             else:
                 # 8 Otherwise use Digit conversion
-                result_list.append(self.digit.convert(decimal))
+                if int(decimal) < 10:
+                    result_list.append(self.digit.convert(decimal))
+                else:
+                    result_list.append(self.cardinal.convert(decimal))
 
         # 9 If there is a number (there doesn't have to be), then add it in front
         if number:

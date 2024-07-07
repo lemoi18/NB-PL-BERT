@@ -44,7 +44,7 @@ class LegalSymbols:
             "4": "fire",
             "5": "fem",
             "6": "seks",
-            "7": "sju",
+            "7": "syv",
             "8": "åtte",
             "9": "ni",
             "10": "ti",

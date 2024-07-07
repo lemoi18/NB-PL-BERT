@@ -1,83 +1,43 @@
 from singleton_decorator import singleton
 import re
 
+
 @singleton
 class Cardinal:
     """
-    Steps
-    - 1 Remove dots
-    - 2 Check whether we are dealing with a Roman Numeral
-    - 3 If we are, convert the largest found roman numeral to an integer, and then a string representing that integer
-    - 4 If we are, check whether we should include the "'s" suffix (see special cases)
-    - 5 Filter out any non digit characters, except "-"
-    - 6 Check whether we should use the "minus" prefix
-    - 7 Remove all remaining "-" characters
-    - 8 If "0", add "null" to the output list
-    - 9 If not "0", split string into chunks of max size 3, such that the smallest chunk includes the left most characters
-    -   10 Split up each chunk into `hundred` and `rest`
-    -   11 Add "x hundred" if `hundred` > 0
-    -   12 Add the textual value representing `rest`
-    -   13 Add the suffix for the chunk, eg million, milliard, etc.
-    -   14 Add the output for the chunk to the total output
-    - 15 Reduce the total output list into one string
-    - 16 Add pre- and/or suffixes
-
-    Special Cases:
-    II -> to
-    -2 -> minus to
-    I. -> en
-    IV's -> fire's
-
-    Notes:
-    - There are no "og"s, nor any dashes in the results, eg no "tjue-en" or "hundre og en"
+    Handles the conversion of cardinal numbers to their textual representation in Norwegian.
     """
     def __init__(self):
         super().__init__()
-        # Regex to remove non digits (spaces, commas etc.), but keep "-"
         self.filter_regex = re.compile("[^0-9\-]")
-        # Regex to remove non digits (spaces, commas, "-", etc.)
-        self.filter_strict_regex = re.compile("[^0-9]")
-        # Regex out dots
         self.dot_filter_regex = re.compile("[.]")
 
-        # List of suffixes
+        # List of suffixes for scales
         self.scale_suffixes = [
-            "tusen", 
-            "million", 
-            "milliard", 
-            "billion", 
-            "billiard", 
-            "trillion"
+            ("tusen", "tusen"),        # singular and plural are the same
+            ("million", "millioner"),
+            ("milliard", "milliarder"),
+            ("billion", "billioner"),
+            ("billiard", "billiarder"),
+            ("trillion", "trillioner")
         ]
 
         # Translation dict for small numbers
         self.small_trans_dict = {
-            "1": "en",
+            "1": ["en", "ett"],
             "2": "to",
             "3": "tre",
             "4": "fire",
             "5": "fem",
             "6": "seks",
-            "7": "sju",
+            "7": "syv",
             "8": "åtte",
             "9": "ni"
         }
 
-        # Translation dict for multiples of tens
-        self.tens_trans_dict = {
-            "1": "ti",
-            "2": "tjue",
-            "3": "tretti",
-            "4": "førti",
-            "5": "femti",
-            "6": "seksti",
-            "7": "sytti",
-            "8": "åtti",
-            "9": "nitti"
-        }
-
-        # Translation dict for special cases
+        # Special translation cases for 10-19
         self.special_trans_dict = {
+            10: "ti",
             11: "elleve",
             12: "tolv",
             13: "tretten",
@@ -89,71 +49,102 @@ class Cardinal:
             19: "nitten"
         }
 
-    def _give_chunk(self, num_str: str, size:int = 3) -> str:
-        # While string not empty
+        # Translation dict for multiples of tens
+        self.tens_trans_dict = {
+            "2": "tjue",
+            "3": "tretti",
+            "4": "førti",
+            "5": "femti",
+            "6": "seksti",
+            "7": "sytti",
+            "8": "åtti",
+            "9": "nitti"
+        }
+
+    def _give_chunk(self, num_str: str, size: int = 3):
+        """
+        Yield chunks of the number string from right to left.
+        """
         while num_str:
-            # yield `size` last elements
             yield num_str[-size:]
-            # Shrink num_str
             num_str = num_str[:-size]
 
-    def convert(self, token: str) -> str:
-        # 1 Remove Dots
-        token = self.dot_filter_regex.sub("", token)
+    def _translate_small_number(self, number: str, use_ett: bool = False) -> str:
+        """
+        Translate a single-digit number to its Norwegian word.
+        """
+        if number in self.small_trans_dict:
+            translations = self.small_trans_dict[number]
+            if isinstance(translations, list):
+                return translations[1] if use_ett else translations[0]
+            return translations
+        return ""
 
-        # 5 Filter out non digits (but keep "-")
+    def _translate_tens_number(self, number: str) -> str:
+        """
+        Translate a tens digit to its Norwegian word.
+        """
+        if number in self.tens_trans_dict:
+            return self.tens_trans_dict[number]
+        return ""
+
+    def convert(self, token: str, use_ett: bool = False) -> str:
+        """
+        Convert a numeric string into its Norwegian text representation.
+        """
+        # Clean the input token
+        token = self.dot_filter_regex.sub("", token)
         token = self.filter_regex.sub("", token)
 
-        # 6 Prefix for final result. 
+        # Handle negative numbers
         prefix = ""
-        while len(token) > 0 and token[0] == "-":
+        if token.startswith("-"):
             token = token[1:]
-            prefix = "minus" if prefix == "" else ""
+            prefix = "minus"
 
-        # 7 Now remove all '-' that may exist somewhere not at the start of a number
-        token = self.filter_strict_regex.sub("", token)
-
-        # List to store separate words representing the number
         text_list = []
 
-        # 8 The character 0 should only be "null" if there is nothing to the left of it. Otherwise we ignore it.
         if token == len(token) * "0":
             text_list.append("null")
         else:
-            # 9 Split up number into chunks
-            for depth, chunk in enumerate(self._give_chunk(token)):
+            chunks = list(self._give_chunk(token))
+            for depth, chunk in enumerate(chunks):
                 chunk_text_list = []
-                # 10 Split up chunk into two sections
-                hundred, rest = chunk[-3:-2], chunk[-2:]
-                
-                # 11 Get "x hundred" prefix
-                if len(hundred) != 0 and int(hundred) != 0:
-                    chunk_text_list.append(self.small_trans_dict[hundred])
+                if len(chunk) == 3:
+                    hundred, rest = chunk[0], chunk[1:]
+                else:
+                    hundred, rest = "", chunk
+
+                # Handle hundreds
+                if hundred and int(hundred) != 0:
+                    chunk_text_list.append(self._translate_small_number(hundred, use_ett=True))
                     chunk_text_list.append("hundre")
-                
-                # 12 Get text form of `rest`
+
+                # Handle 10-19
                 if int(rest) in self.special_trans_dict:
                     chunk_text_list.append(self.special_trans_dict[int(rest)])
                 else:
-                    if len(rest) == 2 and rest[-2] != "0":
-                        chunk_text_list.append(self.tens_trans_dict[rest[-2]])
-                    if rest[-1] != "0":
-                        chunk_text_list.append(self.small_trans_dict[rest[-1]])
-                
-                # 13 Add suffix based on depth. Eg million, milliard.
-                if depth > 0 and len(chunk_text_list) > 0:
-                    try:
-                        chunk_text_list.append(self.scale_suffixes[depth-1])
-                    except IndexError:
-                        pass
-                
-                # 14 Put the text from this chunk at the start of the text_list
-                text_list = chunk_text_list + text_list
-        
-        # 15 Join the list elements with spaces
-        token = " ".join(text_list)
+                    # Handle tens and units
+                    if len(rest) == 2 and rest[0] != "0":
+                        chunk_text_list.append(self._translate_tens_number(rest[0]))
+                        if rest[1] != "0":
+                            chunk_text_list[-1] += self._translate_small_number(rest[1], use_ett)
+                    elif rest[-1] != "0":
+                        chunk_text_list.append(self._translate_small_number(rest[-1], use_ett))
 
-        # 16 Apply prefix, if applicable
+                if depth > 0:
+                    # Translate the thousand chunk properly
+                    if len(chunk_text_list) == 0:
+                        continue
+                    if depth == 1:
+                        chunk_text_list = [self.special_trans_dict[int(chunk)] if int(chunk) in self.special_trans_dict else self._translate_small_number(chunk)] + ["tusen"]
+                    else:
+                        suffix_singular, suffix_plural = self.scale_suffixes[depth-1]
+                        chunk_text_list.append(suffix_singular if int(chunk) == 1 else suffix_plural)
+
+                text_list = chunk_text_list + text_list
+
+        token = " ".join(text_list)
         if prefix:
             token = f"{prefix} {token}"
 
