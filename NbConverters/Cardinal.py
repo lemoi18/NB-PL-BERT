@@ -1,7 +1,6 @@
 from singleton_decorator import singleton
 import re
 
-
 @singleton
 class Cardinal:
     """
@@ -88,10 +87,14 @@ class Cardinal:
             return self.tens_trans_dict[number]
         return ""
 
-    def convert(self, token: str, use_ett: bool = False) -> str:
+    def convert(self, token: str, context: str = "") -> str:
         """
         Convert a numeric string into its Norwegian text representation.
+        The context parameter helps decide whether to use "en" or "ett" for 1.
         """
+        # Determine whether to use "ett" based on context
+        use_ett = context.lower() in ["ett", "nøytrum"]
+
         # Clean the input token
         token = self.dot_filter_regex.sub("", token)
         token = self.filter_regex.sub("", token)

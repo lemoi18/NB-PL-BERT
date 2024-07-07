@@ -52,7 +52,8 @@ def assertEqualWithColor(actual, expected, message):
 
 def test_cardinal(setup_normalization):
     cardinal = setup_normalization["cardinal"]
-    assertEqualWithColor(cardinal.convert("1"), "en", "Cardinal conversion for '1'")
+    assertEqualWithColor(cardinal.convert("1", context="hannkjønn"), "en", "Cardinal conversion for '1' in hannkjønn context")
+    assertEqualWithColor(cardinal.convert("1", context="nøytrum"), "ett", "Cardinal conversion for '1' in nøytrum context")
     assertEqualWithColor(cardinal.convert("2"), "to", "Cardinal conversion for '2'")
     assertEqualWithColor(cardinal.convert("10"), "ti", "Cardinal conversion for '10'")
     assertEqualWithColor(cardinal.convert("11"), "elleve", "Cardinal conversion for '11'")
@@ -62,6 +63,7 @@ def test_cardinal(setup_normalization):
     assertEqualWithColor(cardinal.convert("1500"), "en tusen fem hundre", "Cardinal conversion for '1500'")
     assertEqualWithColor(cardinal.convert("5000000"), "fem millioner", "Cardinal conversion for '5000000'")
     assertEqualWithColor(cardinal.convert("2000000000"), "to milliarder", "Cardinal conversion for '2000000000'")
+
 
 def test_digit(setup_normalization):
     digit = setup_normalization["digit"]
