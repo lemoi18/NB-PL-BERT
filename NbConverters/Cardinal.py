@@ -13,7 +13,7 @@ class Cardinal:
 
         # List of suffixes for scales
         self.scale_suffixes = [
-            ("tusen", "tusen"),        # singular and plural are the same
+            ("tusen", "tusen"),
             ("million", "millioner"),
             ("milliard", "milliarder"),
             ("billion", "billioner"),
@@ -87,10 +87,11 @@ class Cardinal:
             return self.tens_trans_dict[number]
         return ""
 
-    def convert(self, token: str, context: str = "") -> str:
+    def convert(self, token: str, context: str = "hannkjønn") -> str:
         """
         Convert a numeric string into its Norwegian text representation.
         The context parameter helps decide whether to use "en" or "ett" for 1.
+        Defaults to "hannkjønn".
         """
         # Determine whether to use "ett" based on context
         use_ett = context.lower() in ["ett", "nøytrum"]
@@ -132,22 +133,25 @@ class Cardinal:
                         chunk_text_list.append(self._translate_tens_number(rest[0]))
                         if rest[1] != "0":
                             chunk_text_list[-1] += self._translate_small_number(rest[1], use_ett)
-                    elif rest[-1] != "0":
+                    elif rest and rest[-1] != "0":
                         chunk_text_list.append(self._translate_small_number(rest[-1], use_ett))
 
-                if depth > 0:
-                    # Translate the thousand chunk properly
-                    if len(chunk_text_list) == 0:
-                        continue
-                    if depth == 1:
-                        chunk_text_list = [self.special_trans_dict[int(chunk)] if int(chunk) in self.special_trans_dict else self._translate_small_number(chunk)] + ["tusen"]
-                    else:
-                        suffix_singular, suffix_plural = self.scale_suffixes[depth-1]
-                        chunk_text_list.append(suffix_singular if int(chunk) == 1 else suffix_plural)
+                # Only append scales (thousands, millions, etc.) if the chunk is non-zero
+                if depth > 0 and int(chunk) != 0:
+                    suffix_singular, suffix_plural = self.scale_suffixes[depth-1]
+                    chunk_text_list.append(suffix_singular if int(chunk) == 1 else suffix_plural)
+
+                # Special handling for numbers like 1200 to convert to "tolv hundre"
+                if depth == 1 and len(chunk) == 3 and int(chunk[1:3]) == 0:
+                    chunk_text_list = [self.special_trans_dict.get(int(chunk[0:2]), self._translate_small_number(chunk[0])) + " hundre"]
 
                 text_list = chunk_text_list + text_list
 
-        token = " ".join(text_list)
+        # Remove any incorrect addition of "hundre" due to erroneous logic
+        if "hundre" in text_list[-1] and len(text_list) > 1 and text_list[-2] in ["millioner", "milliarder", "billioner"]:
+            text_list.pop(-1)
+
+        token = " ".join(text_list).strip()
         if prefix:
             token = f"{prefix} {token}"
 

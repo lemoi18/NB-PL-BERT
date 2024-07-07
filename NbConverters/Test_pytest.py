@@ -65,6 +65,7 @@ def test_cardinal(setup_normalization):
     assertEqualWithColor(cardinal.convert("2000000000"), "to milliarder", "Cardinal conversion for '2000000000'")
 
 
+
 def test_digit(setup_normalization):
     digit = setup_normalization["digit"]
     assertEqualWithColor(digit.convert("1"), "en", "Digit conversion for '1'")
