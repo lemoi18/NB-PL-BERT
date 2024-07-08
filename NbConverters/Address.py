@@ -1,4 +1,3 @@
-import singleton
 from singleton_decorator import singleton
 import re
 
@@ -22,7 +21,9 @@ class Address:
         # Regex to remove dots
         self.filter_regex = re.compile(r"[.]")
         # Regex to match digits
-        self.digit_regex = re.compile(r"^\d+$")
+        self.digit_regex = re.compile(r"\d")
+        # Regex to split word into digit and non-digit parts
+        self.split_regex = re.compile(r"(\d+|\D+)")
     
     def convert(self, token: str) -> str:
         # 1 Replace all "-" and "/" with " "
@@ -39,9 +40,14 @@ class Address:
         return " ".join(words)
 
     def convert_word(self, word: str) -> str:
-        if self.digit_regex.match(word):
-            return " ".join([self.digit_to_text(digit) for digit in word])
-        return word
+        parts = self.split_regex.findall(word)
+        converted_parts = []
+        for part in parts:
+            if part.isdigit():
+                converted_parts.append(" ".join([self.digit_to_text(digit) for digit in part]))
+            else:
+                converted_parts.append(part)
+        return " ".join(converted_parts)
 
     def digit_to_text(self, digit: str) -> str:
         return {

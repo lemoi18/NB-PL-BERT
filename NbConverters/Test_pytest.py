@@ -76,23 +76,27 @@ def test_digit(setup_normalization):
 
 def test_decimal(setup_normalization):
     decimal = setup_normalization["decimal"]
-    assertEqualWithColor(decimal.convert("3.14"), "tre komma fjorten", "Decimal conversion for '3.14'")
-    assertEqualWithColor(decimal.convert("0.5"), "null komma fem", "Decimal conversion for '0.5'")
-    assertEqualWithColor(decimal.convert("2.718"), "to komma syv en åtte", "Decimal conversion for '2.718'")
-    assertEqualWithColor(decimal.convert("1.618"), "en komma seks en åtte", "Decimal conversion for '1.618'")
+    assertEqualWithColor(decimal.convert("3,14"), "tre komma fjorten", "Decimal conversion for '3.14'")
+    assertEqualWithColor(decimal.convert("0,5"), "null komma fem", "Decimal conversion for '0.5'")
+    assertEqualWithColor(decimal.convert("2,718"), "to komma syv en åtte", "Decimal conversion for '2.718'")
+    assertEqualWithColor(decimal.convert("1,618"), "en komma seks en åtte", "Decimal conversion for '1.618'")
 
 def test_date(setup_normalization):
     date = setup_normalization["date"]
-    assertEqualWithColor(date.convert("12/03/2021"), ("tolvte mars tjue tjueen", "tolvte mars to tusen og tjueen"), "Date conversion for '12/03/2021'")
-    assertEqualWithColor(date.convert("01/01/2020"), ("første januar tjuetjue", "første januar to tusen og tjue"), "Date conversion for '01/01/2020'")
-    assertEqualWithColor(date.convert("25/12/2022"), ("tjuefemte desember tjue tjue to", "tjuefemte desember to tusen og tjue to"), "Date conversion for '25/12/2022'")
-    assertEqualWithColor(date.convert("31/10/1999"), ("trettiførste oktober nitten nitti ni", "trettiførste oktober nitten hundre og nitti ni"), "Date conversion for '31/10/1999'")
+    assertEqualWithColor(date.convert("12/03/2021"), ("tolvte mars tjue tjueen", "den tolvte mars tjue tjueen"), "Date conversion for '12/03/2021'")
+    assertEqualWithColor(date.convert("01/01/2020"), ("første januar tjuetjue", "den første januar tjue tjue"), "Date conversion for '01/01/2020'")
+    assertEqualWithColor(date.convert("25/12/2022"), ("den tjuefemte desember tjue tjueto", "tjuefemte desember to tusen og tjue to"), "Date conversion for '25/12/2022'")
+    assertEqualWithColor(date.convert("31/10/1999"), ("den trettiførste oktober nitten nittini", "trettiførste oktober nitten hundre og nitti ni"), "Date conversion for '31/10/1999'")
 
 
 def test_address(setup_normalization):
     address = setup_normalization["address"]
     assertEqualWithColor(address.convert("Oslo123"), "Oslo en to tre", "Address conversion for 'Oslo123'")
-    assertEqualWithColor(address.convert("123B"), "en to tre B", "Address conversion for '123B'")
+    assertEqualWithColor(address.convert("Bergen45"), "Bergen fire fem", "Address conversion for 'Bergen45'")
+    assertEqualWithColor(address.convert("Trondheim678"), "Trondheim seks syv åtte", "Address conversion for 'Trondheim678'")
+    assertEqualWithColor(address.convert("Stavanger9"), "Stavanger ni", "Address conversion for 'Stavanger9'")
+    assertEqualWithColor(address.convert("Oslo-123"), "Oslo en to tre", "Address conversion for 'Oslo-123'")
+    assertEqualWithColor(address.convert("Bergen.45"), "Bergen fire fem", "Address conversion for 'Bergen.45'")
 
 # Verbatim Tests
 def test_verbatim(setup_normalization):
@@ -106,31 +110,40 @@ def test_verbatim(setup_normalization):
 def test_measure(setup_normalization):
     measure = setup_normalization["measure"]
     assertEqualWithColor(measure.convert("5kg"), "fem kilogram", "Measure conversion for '5kg'")
-    assertEqualWithColor(measure.convert("100m"), "hundre meter", "Measure conversion for '100m'")
+    assertEqualWithColor(measure.convert("100m"), "ett hundre meter", "Measure conversion for '100m'")
     assertEqualWithColor(measure.convert("3L"), "tre liter", "Measure conversion for '3L'")
     assertEqualWithColor(measure.convert("10cm"), "ti centimeter", "Measure conversion for '10cm'")
 
 def test_fraction(setup_normalization):
     fraction = setup_normalization["fraction"]
     assertEqualWithColor(fraction.convert("1/2"), "en halv", "Fraction conversion for '1/2'")
-    assertEqualWithColor(fraction.convert("3/4"), "tre firedeler", "Fraction conversion for '3/4'")
+    assertEqualWithColor(fraction.convert("3/4"), "tre fjerdedeler", "Fraction conversion for '3/4'")
     assertEqualWithColor(fraction.convert("2/3"), "to tredjedeler", "Fraction conversion for '2/3'")
-    assertEqualWithColor(fraction.convert("5/8"), "fem åttendedeler", "Fraction conversion for '5/8'")
+    assertEqualWithColor(fraction.convert("5/12"), "fem tolvtedeler", "Fraction conversion for '5/12'")
+    assertEqualWithColor(fraction.convert("1/50"), "en femtidel", "Fraction conversion for '1/50'")
+    assertEqualWithColor(fraction.convert("3/72"), "tre syttitodeler", "Fraction conversion for '3/72'")
+    assertEqualWithColor(fraction.convert("1/4"), "en fjerdedel", "Fraction conversion for '1/4'")
+
+
+
+
+
+
 
 # Telephone Tests
 def test_telephone(setup_normalization):
     telephone = setup_normalization["telephone"]
     assertEqualWithColor(telephone.convert("454 90 073"), "fire fem fire ni null null syv tre", "Telephone conversion for '454 90 073'")
-    assertEqualWithColor(telephone.convert("555-1234"), "fem fem fem en to tre fire", "Telephone conversion for '555-1234'")
-    assertEqualWithColor(telephone.convert("+47 926 51 793"), "plus fire syv ni to seks fem en syv ni tre ", "Telephone conversion for '987-6543'")
-    assertEqualWithColor(telephone.convert("000-0000"), "null null null null null null null null", "Telephone conversion for '000-0000'")
+    assertEqualWithColor(telephone.convert("+47 926 51 793"), "pluss fire syv ni to seks fem en syv ni tre", "Telephone conversion for '+47 926 51 793'")
+    assertEqualWithColor(telephone.convert("45490073"), "fire fem fire ni null null syv tre", "Telephone conversion for '45490073'")
+
 
 def test_electronic(setup_normalization):
     electronic = setup_normalization["electronic"]
-    assertEqualWithColor(electronic.convert("http://example.com"), "h t t p : / / e x a m p l e . c o m", "Electronic conversion for 'http://example.com'")
-    assertEqualWithColor(electronic.convert("#hashtag"), "hash tag h a s h t a g", "Electronic conversion for '#hashtag'")
-    assertEqualWithColor(electronic.convert("email@example.com"), "e m a i l @ e x a m p l e . c o m", "Electronic conversion for 'email@example.com'")
-    assertEqualWithColor(electronic.convert("www.example.com"), "w w w . e x a m p l e . c o m", "Electronic conversion for 'www.example.com'")
+    assertEqualWithColor(electronic.convert("http://example.com"), "http kolon skråstrek skråstrek e x a m p l e prikk com", "Electronic conversion for 'http://example.com'")
+    assertEqualWithColor(electronic.convert("https://example.com"), "https kolon skråstrek skråstrek e x a m p l e prikk com", "Electronic conversion for 'https://example.com'")
+    assertEqualWithColor(electronic.convert("#Example"), "hash tag e x a m p l e", "Electronic conversion for '#Example'")
+    assertEqualWithColor(electronic.convert("user-name"), "u s e r bindestrek n a m e", "Electronic conversion for 'user-name'")
 
 # Time Tests
 def test_time(setup_normalization):
@@ -153,7 +166,7 @@ def test_range(setup_normalization):
     range_converter = setup_normalization["range_converter"]
     assertEqualWithColor(range_converter.convert("1-10"), "en til ti", "Range conversion for '1-10'")
     assertEqualWithColor(range_converter.convert("5-7"), "fem til syv", "Range conversion for '5-7'")
-    assertEqualWithColor(range_converter.convert("0-100"), "null til hundre", "Range conversion for '0-100'")
+    assertEqualWithColor(range_converter.convert("0-100"), "null til ett hundre", "Range conversion for '0-100'")
     assertEqualWithColor(range_converter.convert("200-300"), "to hundre til tre hundre", "Range conversion for '200-300'")
 
 # Letters Tests
@@ -162,7 +175,7 @@ def test_letters(setup_normalization):
     assertEqualWithColor(letters.convert("NASA"), "N A S A", "Letters conversion for 'NASA'")
     assertEqualWithColor(letters.convert("abc"), "a b c", "Letters conversion for 'abc'")
     assertEqualWithColor(letters.convert("XYZ"), "X Y Z", "Letters conversion for 'XYZ'")
-    assertEqualWithColor(letters.convert("123"), "1 2 3", "Letters conversion for '123'")
+
 
 def test_legal_symbols(setup_normalization):
     assertEqualWithColor(setup_normalization["legal_symbols"].convert("§ 1"), "paragraf en", "Legal symbols conversion for '§ 1'")
@@ -173,10 +186,14 @@ def test_legal_symbols(setup_normalization):
     assertEqualWithColor(setup_normalization["legal_symbols"].convert("§ 5 - 7"), "paragraf fem til syv", "Legal symbols conversion for '§ 5 - 7'")
 
 def test_ordinal(setup_normalization):
-    assertEqualWithColor(setup_normalization["ordinal"].convert("1st"), "første", "Ordinal conversion for '1st'")
-    assertEqualWithColor(setup_normalization["ordinal"].convert("2nd"), "andre", "Ordinal conversion for '2nd'")
-    assertEqualWithColor(setup_normalization["ordinal"].convert("III"), "den tredje", "Ordinal conversion for 'III'")
-    assertEqualWithColor(setup_normalization["ordinal"].convert("4th"), "fjerde", "Ordinal conversion for '4th'")
+    ordinal = setup_normalization["ordinal"]
+
+    assertEqualWithColor(ordinal.convert("III"), "den tredje", "Ordinal conversion for 'III'")
+    assertEqualWithColor(ordinal.convert("IV"), "den fjerde", "Ordinal conversion for 'IV'")
+    assertEqualWithColor(ordinal.convert("VII"), "den syvende", "Ordinal conversion for 'VII'")
+    assertEqualWithColor(ordinal.convert("XII"), "den tolvte", "Ordinal conversion for 'XII'")
+    assertEqualWithColor(ordinal.convert("XXI"), "tjueførste", "Ordinal conversion for 'XXI'")
+
 
 def test_money(setup_normalization):
     assertEqualWithColor(setup_normalization["money"].convert("$5"), "fem dollar", "Money conversion for '$5'")

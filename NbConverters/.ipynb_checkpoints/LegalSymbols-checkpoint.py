@@ -48,7 +48,7 @@ class LegalSymbols:
             "8": "åtte",
             "9": "ni",
             "10": "ti",
-            "11": "ellve",
+            "11": "elleve",
             "12": "tolv",
             # Add more as needed
         }
@@ -88,17 +88,17 @@ class LegalSymbols:
         if token in self.legal_trans_dict:
             return self.legal_trans_dict[token]
 
+        # Handle sub-sections with ranges
+        match = self.sub_section_regex.match(token)
+        if match:
+            start_section, end_section = match.group(1), match.group(2)
+            return f"paragraf {self.number_to_text(start_section)} til {self.number_to_text(end_section)}"
+
         # Handle section symbols with numbers
         match = self.section_regex.match(token)
         if match:
             section_number = match.group(1)
             return f"paragraf {self.number_to_text(section_number)}"
-
-        # Handle sub-sections with ranges
-        match = self.sub_section_regex.match(token)
-        if match:
-            start_section, end_section = match.group(1), match.group(2)
-            return f"paragraf {self.number_to_text(start_section)} til paragraf {self.number_to_text(end_section)}"
 
         # Handle list items with numbers
         match = self.list_regex.match(token)
@@ -117,13 +117,12 @@ class LegalSymbols:
 
     def number_to_text(self, number: str) -> str:
         # Convert numbers to their textual representation
-        # This function can be extended to handle more complex numbers if needed
         if number in self.num_dict:
             return self.num_dict[number]
         return number
+
     def number_to_text_list(self, number: str) -> str:
-        # Convert numbers to their textual representation
-        # This function can be extended to handle more complex numbers if needed
+        # Convert numbers to their textual representation for list items
         if number in self.num_dict_list:
             return self.num_dict_list[number]
         return number

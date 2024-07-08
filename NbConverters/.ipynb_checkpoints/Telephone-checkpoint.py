@@ -8,13 +8,13 @@ class Telephone:
     """
     def __init__(self):
         super().__init__()
-        self.phone_regex = re.compile(r"(\+?\d{1,3})?[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})")
+        self.phone_regex = re.compile(r"(\+?\d{1,3})?[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})[-.\s]?(\d{1,4})?")
 
     def convert(self, token: str) -> str:
         match = self.phone_regex.match(token)
         if match:
             parts = [part for part in match.groups() if part]
-            return " ".join(self.convert_part(part) for part in parts)
+            return " ".join(self.convert_part(part) for part in parts).strip()
         return token
 
     def convert_part(self, part: str) -> str:

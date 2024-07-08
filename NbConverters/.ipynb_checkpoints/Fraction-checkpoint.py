@@ -5,195 +5,62 @@ from Cardinal import Cardinal
 @singleton
 class Fraction:
     """
-    Steps:
-    - 1 Filter out commas
-    - 2 Check whether the input consists for example ½
-    - 3 If it does, get the text representing the unicode character
-    - 4 If it does, check whether there are remaining values (eg in the case of 8 ½)
-    - 5 If it does have remaining values, convert those remaining values to Cardinal style and prepend them
-    - 6 Try to match values of the format .../...
-    - 7 Get the numerator and denominator of the match.
-    - 8 Strip the numerator and denominator of spaces
-    - 9 Turn the numerator into cardinal style
-    - 10 Test the denominator for edge cases such as "1", "2" and "4"
-    - 11 If no such edge cases apply, convert the denominator to cardinal style, 
-         and replace the last word with a word in the -th or -ths style.
-    - 12 Get the potential remaining values (eg in 2 1/2)
-    - 13 Turn these values to cardinal, prepend them to the result, and potentially changing "one" to "a".
-
-    Special Cases:
-    ½, ¼, ¾, ⅔, ⅛, ⅞, ⅝, etc.
-    1½ -> en og en halv
-    ½  -> en halv
-    8 1/2 -> 8 og en halv
-    1/4 -> en kvart
-    4/1 -> fire over en
-    100 000/24 -> hundre tusen tjuefjerde
-
-    Note:
-    Always has either a "x y/z", "x/y", "½", or "8 ½"
+    Converts fractions to their textual representation in Norwegian.
     """
     def __init__(self):
         super().__init__()
-        # Regex to filter out commas
         self.filter_regex = re.compile(",")
-        # Regex to filter out spaces
         self.space_filter_regex = re.compile(" ")
-        # Translation dict for special cases
         self.trans_dict = {
-            "½": {
-                "prepended": "en",
-                "single": "en",
-                "text": "halv"
-                },
-            "⅓": {
-                "prepended": "en",
-                "single": "en",
-                "text": "tredjedel"
-                },
-            "⅔": {
-                "prepended": "to",
-                "single": "to",
-                "text": "tredjedeler"
-                },
-            "¼": {
-                "prepended": "en",
-                "single": "en",
-                "text": "kvart"
-                },
-            "¾": {
-                "prepended": "tre",
-                "single": "tre",
-                "text": "kvart"
-                },
-            "⅕": {
-                "prepended": "en",
-                "single": "en",
-                "text": "femtedel"
-                },
-            "⅖": {
-                "prepended": "to",
-                "single": "to",
-                "text": "femtedeler"
-                },
-            "⅗": {
-                "prepended": "tre",
-                "single": "tre",
-                "text": "femtedeler"
-                },
-            "⅘": {
-                "prepended": "fire",
-                "single": "fire",
-                "text": "femtedeler"
-                },
-            "⅙": {
-                "prepended": "en",
-                "single": "en",
-                "text": "sjettedel"
-                },
-            "⅚": {
-                "prepended": "fem",
-                "single": "fem",
-                "text": "sjettedeler"
-                },
-            "⅐": {
-                "prepended": "en",
-                "single": "en",
-                "text": "syvendel"
-                },
-            "⅛": {
-                "prepended": "en",
-                "single": "en",
-                "text": "åttendedel"
-                },
-            "⅜": {
-                "prepended": "tre",
-                "single": "tre",
-                "text": "åttendedeler"
-                },
-            "⅝": {
-                "prepended": "fem",
-                "single": "fem",
-                "text": "åttendedeler"
-                },
-            "⅞": {
-                "prepended": "syv",
-                "single": "syv",
-                "text": "åttendedeler"
-                },
-            "⅑": {
-                "prepended": "en",
-                "single": "en",
-                "text": "niendedel"
-                },
-            "⅒": {
-                "prepended": "en",
-                "single": "en",
-                "text": "tiendedel"
-                }
+            "½": {"prepended": "en", "single": "en", "text": "halv"},
+            "⅓": {"prepended": "en", "single": "en", "text": "tredjedel"},
+            "⅔": {"prepended": "to", "single": "to", "text": "tredjedeler"},
+            "¼": {"prepended": "en", "single": "en", "text": "fjerdedel"},
+            "¾": {"prepended": "tre", "single": "tre", "text": "fjerdedeler"},
+            "⅕": {"prepended": "en", "single": "en", "text": "femtedel"},
+            "⅖": {"prepended": "to", "single": "to", "text": "femtedeler"},
+            "⅗": {"prepended": "tre", "single": "tre", "text": "femtedeler"},
+            "⅘": {"prepended": "fire", "single": "fire", "text": "femtedeler"},
+            "⅙": {"prepended": "en", "single": "en", "text": "sjettedel"},
+            "⅚": {"prepended": "fem", "single": "fem", "text": "sjettedeler"},
+            "⅐": {"prepended": "en", "single": "en", "text": "syvendedel"},
+            "⅛": {"prepended": "en", "single": "en", "text": "åttendedel"},
+            "⅜": {"prepended": "tre", "single": "tre", "text": "åttendedeler"},
+            "⅝": {"prepended": "fem", "single": "fem", "text": "åttendedeler"},
+            "⅞": {"prepended": "syv", "single": "syv", "text": "åttendedeler"},
+            "⅑": {"prepended": "en", "single": "en", "text": "niendedel"},
+            "⅒": {"prepended": "en", "single": "en", "text": "tiendedel"}
         }
-        # Regex to check for special case
         self.special_regex = re.compile(f"({'|'.join(self.trans_dict.keys())})")
         self.cardinal = Cardinal()
-
-        # Regex for .../...
-        # The simpler version of this regex does not allow for "100 000/24" to be seen as "100000/24"
         self.slash_regex = re.compile(r"(-?\d{1,3}( \d{3})+|-?\d+) *\/ *(-?\d{1,3}( \d{3})+|-?\d+)")
-
-        # Translation from Cardinal style to Ordinal style
         self.trans_denominator = {
-            "null": "nullte",
-            "en": "første",
-            "to": "andre",
-            "tre": "tredje",
-            "fire": "fjerde",
-            "fem": "femte",
-            "seks": "sjette",
-            "syv": "syvende",
-            "fjorten": "fjortende",
-            "femten": "femtende",
-            "seksten": "sekstende",
-            "sytten": "syttende",
-            "atten": "attende",
-            "nitten": "nittende",
-
-            "hundre": "hundrede",
-            "tusen": "tusende",
-            "million": "millionte",
-            "milliard": "milliardte",
-            "billion": "billionte",
-            "billiard": "billiardte",
-            "trillion": "trillionte",
-            "quadrillion": "kvadrillionte",
-            "quintillion": "kvintillionte",
-            "sextillion": "seksillionte",
-            "septillion": "septillionte",
-            "octillion": "oktillionte",
-            "undecillion": "undecillionte",
-            "tredecillion": "tredecillionte",
-            "quattuordecillion": "quattuordecillionte",
-            "quindecillion": "quindecillionte",
-            "sexdecillion": "sexdecillionte",
-            "septendecillion": "septendecillionte",
-            "octodecillion": "oktodecillionte",
-            "novemdecillion": "novemdecillionte",
-            "vigintillion": "vigintillionte"
+            "null": "nullte", "en": "første", "to": "andre", "tre": "tredje", "fire": "fjerde",
+            "fem": "femte", "seks": "sjette", "syv": "syvende", "åtte": "åttende", "ni": "niende",
+            "ti": "tiende", "elleve": "ellevte", "tolv": "tolvte", "tretten": "trettende",
+            "fjorten": "fjortende", "femten": "femtende", "seksten": "sekstende", "sytten": "syttende",
+            "atten": "attende", "nitten": "nittende", "tyve": "tyvende", "hundre": "hundrede",
+            "tusen": "tusende", "million": "millionte", "milliard": "milliardte", "billion": "billionte"
         }
 
-        # Translation dict for edge cases
         self.edge_dict = {
-            "1": {
-                "singular": "over en",
-                "plural": "over en"
-                },
-            "2": {
-                "singular": "halv",
-                "plural": "halv"
-                },
-            "4": {
-                "singular": "kvart",
-                "plural": "kvart"
-                }
+            "1": {"singular": "over en", "plural": "over en"},
+            "2": {"singular": "halv", "plural": "halv"},
+            "4": {"singular": "fjerdedel", "plural": "fjerdedeler"}
+        }
+        self.small_denominators = {
+            "1": {"singular": "over en", "plural": "over en"},
+            "2": {"singular": "halv", "plural": "halv"},
+            "3": {"singular": "tredjedel", "plural": "tredjedeler"},
+            "4": {"singular": "fjerdedel", "plural": "fjerdedeler"},
+            "5": {"singular": "femtedel", "plural": "femtedeler"},
+            "6": {"singular": "sjettedel", "plural": "sjettedeler"},
+            "7": {"singular": "syvendedel", "plural": "syvendedeler"},
+            "8": {"singular": "åttendedel", "plural": "åttendedeler"},
+            "9": {"singular": "niendedel", "plural": "niendedeler"},
+            "10": {"singular": "tiendedel", "plural": "tiendedeler"},
+            "11": {"singular": "ellevte", "plural": "ellevtedeler"},
+            "12": {"singular": "tolvte", "plural": "tolvtedeler"}
         }
 
     def convert(self, token: str) -> str:
@@ -230,22 +97,30 @@ class Fraction:
                 # 9 The numerator is a number in cardinal style
                 numerator_text = self.cardinal.convert(numerator)
 
-                # 10 We have some edge cases to deal with
-                if denominator in self.edge_dict:
-                    # Apply edge cases
-                    result = f"{numerator_text} {self.edge_dict[denominator][('singular' if abs(int(numerator)) == 1 else 'plural')]}"
-                
+                # 10 Check if the denominator is a small denominator
+                if denominator in self.small_denominators:
+                    denominator_text = self.small_denominators[denominator]['plural' if int(numerator) > 1 else 'singular']
                 else:
-                    # 11 Convert the denominator to cardinal style, and convert the last word to
-                    # the denominator style using self.trans_denominator.
-                    denominator_text_list = self.cardinal.convert(denominator).split(" ")
-                    denominator_text_list[-1] = self.trans_denominator[denominator_text_list[-1]]
-                    # Potentially add "s" if the numerator is larger than 1.
-                    # e.g., ninth -> ninths 
-                    if abs(int(numerator)) != 1:
-                        denominator_text_list[-1] += "s"
-                    denominator_text = " ".join(denominator_text_list)
-                    result = f"{numerator_text} {denominator_text}"
+                    # Handle edge cases
+                    if denominator in self.edge_dict:
+                        result = f"{numerator_text} {self.edge_dict[denominator][('singular' if abs(int(numerator)) == 1 else 'plural')]}"
+                    else:
+                        # 11 Convert the denominator to ordinal style
+                        denominator_text_list = self.cardinal.convert(denominator).split(" ")
+                        last_word = denominator_text_list[-1]
+                        if last_word in self.trans_denominator:
+                            denominator_text_list[-1] = self.trans_denominator[last_word]
+                        else:
+                            # For large numbers, allow both ordinal and -del suffix forms
+                            ordinal_form = f"{last_word}te"
+                            del_form = f"{last_word}del"
+                            if abs(int(numerator)) != 1:
+                                ordinal_form += "er"
+                                del_form += "er"
+                            denominator_text_list[-1] = f"{del_form}"
+                        denominator_text = " ".join(denominator_text_list)
+                
+                result = f"{numerator_text} {denominator_text}"
                 
                 # 12 Get remaining values
                 remainder = self.slash_regex.sub("", token)
