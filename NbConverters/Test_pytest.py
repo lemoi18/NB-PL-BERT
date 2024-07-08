@@ -113,6 +113,9 @@ def test_measure(setup_normalization):
     assertEqualWithColor(measure.convert("100m"), "ett hundre meter", "Measure conversion for '100m'")
     assertEqualWithColor(measure.convert("3L"), "tre liter", "Measure conversion for '3L'")
     assertEqualWithColor(measure.convert("10cm"), "ti centimeter", "Measure conversion for '10cm'")
+    assertEqualWithColor(measure.convert("10s"), "ti sekunder", "Measure conversion for '10s'")
+    assertEqualWithColor(measure.convert("10cm/s"), "ti centimeter per sekunder", "Measure conversion for '10cm/s'")
+
 
 def test_fraction(setup_normalization):
     fraction = setup_normalization["fraction"]
@@ -192,7 +195,7 @@ def test_ordinal(setup_normalization):
     assertEqualWithColor(ordinal.convert("IV"), "den fjerde", "Ordinal conversion for 'IV'")
     assertEqualWithColor(ordinal.convert("VII"), "den syvende", "Ordinal conversion for 'VII'")
     assertEqualWithColor(ordinal.convert("XII"), "den tolvte", "Ordinal conversion for 'XII'")
-    assertEqualWithColor(ordinal.convert("XXI"), "tjueførste", "Ordinal conversion for 'XXI'")
+    assertEqualWithColor(ordinal.convert("XXI"), "den tjueførste", "Ordinal conversion for 'XXI'")
 
 
 def test_money(setup_normalization):

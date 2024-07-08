@@ -61,13 +61,21 @@ class Ordinal:
             "billion": "billionte",
         }
         self.roman = Roman()
-    
+
     def convert(self, token: str) -> str:
         token = self.filter_regex.sub("", token)
         if self.roman.check_if_roman(token):
-            number, suffix = self.roman.convert(token)
-            ordinal_text = self.trans_denominator.get(number, number)
+            # Convert the Roman numeral to its integer equivalent
+            number, _ = self.roman.convert(token)
+            # Convert the integer to its Norwegian text representation
+            number_text = self.cardinal.convert(number)
+            # Map the text representation to the Norwegian ordinal text
+            ordinal_text = self.trans_denominator.get(number_text, number_text)
+            # Add the "den" prefix for ordinal text
+            if not ordinal_text.startswith("den "):
+                ordinal_text = f"den {ordinal_text}"
             return ordinal_text
+        
         
         match = self.standard_case_regex.fullmatch(token)
         if match:

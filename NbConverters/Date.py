@@ -48,7 +48,7 @@ class Date:
         if match:
             prefix = self.get_prefix(match.group("prefix"))
             token = token[match.span()[1]:].strip()
-        if token.lower().startswith("the "):
+        if token.lower().startswith("den "):
             token = token[4:]
 
         def construct_output():
