@@ -114,7 +114,7 @@ def test_measure(setup_normalization):
     assertEqualWithColor(measure.convert("3L"), "tre liter", "Measure conversion for '3L'")
     assertEqualWithColor(measure.convert("10cm"), "ti centimeter", "Measure conversion for '10cm'")
     assertEqualWithColor(measure.convert("10s"), "ti sekunder", "Measure conversion for '10s'")
-    assertEqualWithColor(measure.convert("10cm/s"), "ti centimeter per sekunder", "Measure conversion for '10cm/s'")
+    assertEqualWithColor(measure.convert("10cm/s"), "ti centimeter per sekund", "Measure conversion for '10cm/s'")
 
 
 def test_fraction(setup_normalization):
