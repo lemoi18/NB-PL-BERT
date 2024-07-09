@@ -87,6 +87,9 @@ def test_date(setup_normalization):
     assertEqualWithColor(date.convert("01/01/2020"), ("første januar tjuetjue", "den første januar tjue tjue"), "Date conversion for '01/01/2020'")
     assertEqualWithColor(date.convert("25/12/2022"), ("den tjuefemte desember tjue tjueto", "tjuefemte desember to tusen og tjue to"), "Date conversion for '25/12/2022'")
     assertEqualWithColor(date.convert("31/10/1999"), ("den trettiførste oktober nitten nittini", "trettiførste oktober nitten hundre og nitti ni"), "Date conversion for '31/10/1999'")
+    assertEqualWithColor(date.convert("23 Jan 2020"), ("tjuetredje januar tjuetjue", ), "Date conversion for '23 Jan 2020'")
+
+
 
 
 def test_address(setup_normalization):
