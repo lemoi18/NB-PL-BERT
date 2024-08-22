@@ -1,6 +1,6 @@
 
 #
-Norweagian Phoneme-Level BERT
+norwegian Phoneme-Level BERT
 
 
 # Phoneme-Level BERT for Enhanced Prosody of Text-to-Speech with Grapheme Predictions
